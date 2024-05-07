@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+  mosquitto:
+    container_name: mosquitto_container
+    image: eclipse-mosquitto
+    volumes:
+      - ./mqtt/config:/mosquitto/config/
+    ports:
+      - "1883:1883"
+      - "1884:1884"
+    networks:
+      - central
+  python_server:
+    build:
+      context: .
+      dockerfile: ./python_server/Dockerfile
+    volumes:
+      - ./python_server:/app
+    restart: always
+    networks:
+      - central
+    depends_on:
+      - mosquitto
+  web:
+    image: nginx
+    volumes:
+      - ./nginx:/usr/share/nginx
+    ports:
+      - "80:80"
+    networks:
+      - central
+    depends_on:
+      - mosquitto
+
+networks:
+  central:
+    driver: bridge
