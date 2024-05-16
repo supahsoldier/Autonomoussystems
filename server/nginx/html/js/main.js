@@ -4,7 +4,7 @@ let mqttClient;
 let userLST = [];
 
 const clientId = makeClientId(10);
-const host = "ws://127.0.0.1:1884/";
+const host = "ws://" + location.host + ":1884/";
 
 const options = {
 // username: uname,
