@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swarm Controller dev tools</title>
+    <link rel="stylesheet" href="./css/dev.css">
+</head>
+<body>
+    <a href="index.html" class="dev-btn">back</a>
+    <div class="container">
+        <div class="left-top">
+            <h2>Swarm Controller</h2>
+            <input type="text" id="mainInput" placeholder="Enter message...">
+            <button id="mainSendBtn">Send</button>
+        </div>
+        <div class="left-bottom">
+            <h2>Incoming MQTT</h2>
+            <ul id="mqttMessages">
+                <li value="application/front/in">application/front/in</li>
+                <li value="chariot/1/position">chariot/1/position</li>
+                <li value="chariot/2/position">chariot/2/position</li>
+                <li value="chariot/3/position">chariot/3/position</li>
+                <li value="chariot/4/position">chariot/4/position</li>
+                <li value="chariot/5/position">chariot/5/position</li>
+                <li value="chariot/6/position">chariot/6/position</li>
+                <li value="chariot/1/led">chariot/1/led</li>
+                <li value="chariot/2/led">chariot/2/led</li>
+                <li value="chariot/3/led">chariot/3/led</li>
+                <li value="chariot/4/led">chariot/4/led</li>
+                <li value="chariot/5/led">chariot/5/led</li>
+                <li value="chariot/6/led">chariot/6/led</li>
+                <li value="chariot/1/target">chariot/1/target</li>
+                <li value="chariot/2/target">chariot/2/target</li>
+                <li value="chariot/3/target">chariot/3/target</li>
+                <li value="chariot/4/target">chariot/4/target</li>
+                <li value="chariot/5/target">chariot/5/target</li>
+                <li value="chariot/6/target">chariot/6/target</li>
+            </ul>
+        </div>
+        <div class="right-top">
+            <h2>Camera Feed</h2>
+            <input type="text" id="cameraIP" placeholder="Enter camera IP...">
+            <input type="text" id="cameraPort" placeholder="Enter camera Port...">
+            <button id="cameraConnectBtn">OK</button>
+            <div id="cameraFeed" class="camera-feed">
+                <h3 id="feedTitle">camera feed</h3>
+                <!-- <img style="" src="http://192.168.2.18:1973/video" width="616" height="347"> -->
+            </div>
+        </div>
+        <div class="right-bottom">
+            <h2>Send MQTT Message</h2>
+            <select id="mqttTopicSelect"></select>
+            <input type="text" id="mqttMessageInput" placeholder="Enter message...">
+            <button id="mqttSendBtn">Send</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script>
+        // Initialize a mqtt variable globally
+        console.log(mqtt)
+    </script>
+    <script src="js/feed.js"></script>
+    <script src="js/dev.js"></script>
+</body>
+</html>
