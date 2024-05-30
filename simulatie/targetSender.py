@@ -6,9 +6,16 @@ from paho.mqtt import client as mqtt_client
 
 broker = '145.137.22.244'
 port = 1883
-send_topic = "chariot/1/target"
-receive_topic = "chariot/1/target"
 client_id = f'publish-{random.randint(0, 1000)}'
+
+chariot1TargetTopic = "chariot/1/target"
+chariot2TargetTopic = "chariot/2/target"
+chariot3TargetTopic = "chariot/3/target"
+chariot4TargetTopic = "chariot/4/target"
+chariot5TargetTopic = "chariot/5/target"
+chariot6TargetTopic = "chariot/6/target"
+chariotTargetTopics = [chariot1TargetTopic, chariot2TargetTopic, chariot3TargetTopic, chariot4TargetTopic, chariot5TargetTopic, chariot6TargetTopic]
+
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
@@ -28,20 +35,20 @@ def connect_mqtt():
 
 def publish(client):
     for i in range(50):
+        topic = random.choice(chariotTargetTopics)
         xValue = random.randint(-8, 8)
         yValue = random.randint(-8, 8)
         msg = { "x": xValue, 
                 "y": yValue, 
                 "z": 0
                 }
-        client.subscribe(receive_topic)
         jsonMsg = json.dumps(msg)
-        result = client.publish(send_topic, jsonMsg)
+        result = client.publish(topic, jsonMsg)
         status = result[0]
         if status == 0:
-            print(f"Sent `{msg}` to topic `{send_topic}`", file=sys.stderr)
+            print(f"Sent `{msg}` to topic `{topic}`", file=sys.stderr)
         else:
-            print(f"Failed to send message to topic {send_topic}", file=sys.stderr)
+            print(f"Failed to send message to topic {topic}", file=sys.stderr)
 
         time.sleep(2)
 
