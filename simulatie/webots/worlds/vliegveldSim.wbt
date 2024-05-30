@@ -1,0 +1,86 @@
+#VRML_SIM R2023a utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/floors/protos/Floor.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/projects/objects/solids/protos/SolidBox.proto"
+
+WorldInfo {
+}
+Viewpoint {
+  orientation 0.3696292793680608 0.08336646822990902 -0.9254319141939722 2.7300557534571865
+  position 44.41297155080807 21.803026156954814 50.78307982157729
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Floor {
+  translation 0.5 0.5 -0.5
+  size 20 20
+  tileSize 2 2
+}
+Robot {
+  translation 0 0 10.05
+  controller "supervisorCode"
+  supervisor TRUE
+}
+DEF Kubes1 SolidBox {
+  translation -1.5 6.51 0
+  size 1 1 1
+  appearance PBRAppearance {
+    baseColor 1 0 0
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Kubes2 SolidBox {
+  translation 6.5 0.5 0
+  name "box(1)"
+  size 1 1 1
+  appearance PBRAppearance {
+    baseColor 0.0666667 0 1
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Kubes6 SolidBox {
+  translation 6 -7 0
+  name "box(5)"
+  size 1 1 1
+  appearance PBRAppearance {
+    baseColor 0.0666667 0 1
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Kubes3 SolidBox {
+  translation 1.5 -2.51 0
+  name "box(2)"
+  size 1 1 1
+  appearance PBRAppearance {
+    baseColor 0.0156863 1 0
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Kubes4 SolidBox {
+  translation -7.5 -2.5 0
+  name "box(3)"
+  size 1 1 1
+  appearance PBRAppearance {
+    baseColor 1 0.917647 0
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Kubes5 SolidBox {
+  translation -3 -8 0
+  name "box(4)"
+  size 1 1 1
+  appearance PBRAppearance {
+    baseColor 0 1 1
+    roughness 0.5
+    metalness 0
+  }
+}
