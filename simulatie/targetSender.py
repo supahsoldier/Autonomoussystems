@@ -50,7 +50,7 @@ def publish(client):
         else:
             print(f"Failed to send message to topic {topic}", file=sys.stderr)
 
-        time.sleep(2)
+        time.sleep(10)
 
     # Stop the MQTT client loop
     client.loop_stop()

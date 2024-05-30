@@ -9,7 +9,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0.3696292793680608 0.08336646822990902 -0.9254319141939722 2.7300557534571865
-  position 44.41297155080807 21.803026156954814 50.78307982157729
+  position 17.56969672411709 9.04556644977525 22.535090266722296
 }
 TexturedBackground {
 }
@@ -26,7 +26,7 @@ Robot {
   supervisor TRUE
 }
 DEF Kubes1 SolidBox {
-  translation -1.5 6.51 0
+  translation -1 6 0
   size 1 1 1
   appearance PBRAppearance {
     baseColor 1 0 0
@@ -35,7 +35,7 @@ DEF Kubes1 SolidBox {
   }
 }
 DEF Kubes2 SolidBox {
-  translation 6.5 0.5 0
+  translation 6 0 0
   name "box(1)"
   size 1 1 1
   appearance PBRAppearance {
@@ -55,7 +55,7 @@ DEF Kubes6 SolidBox {
   }
 }
 DEF Kubes3 SolidBox {
-  translation 1.5 -2.51 0
+  translation 1 -2 0
   name "box(2)"
   size 1 1 1
   appearance PBRAppearance {
@@ -65,7 +65,7 @@ DEF Kubes3 SolidBox {
   }
 }
 DEF Kubes4 SolidBox {
-  translation -7.5 -2.5 0
+  translation -7 -2 0
   name "box(3)"
   size 1 1 1
   appearance PBRAppearance {
