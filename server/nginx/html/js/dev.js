@@ -57,11 +57,17 @@ mqttClient.on("message", (topic, message, packet) => {
     const topicElements = document.getElementById("mqttMessages").querySelectorAll("li");
 
     // Find the matching list item based on the topic
-    const matchingItem = [...topicElements].find(item => item.getAttribute("value") === topic);
+    let matchingItem = [...topicElements].find(item => item.getAttribute("value") === topic);
 
     if (matchingItem) {
         // Update the inner HTML of the matching item with the message
         matchingItem.innerHTML = topic + ": <b>" + message + "</b>";
+
+        matchingItem.style.color = "red";
+        setTimeout(() => {
+            matchingItem.style.color = "black";
+          }, 1000);
+
     } else {
         console.warn("Received message for unknown topic:", topic);
     }
