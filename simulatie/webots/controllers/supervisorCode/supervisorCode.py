@@ -30,13 +30,13 @@ def getAllPositions():
     return [node.getPosition() for node in chariotNodes]
 
 # Function to move a chariot to a specific position
-def moveToPosition(node, pathData, busyFlag, delay=0.5):
+def moveToPosition(node, pathData, delay=0.5):
 
-    path = pathData["path"]
-    finalOrientation = pathData["finalOrientation"]
+    #path = pathData["path"]
+    #finalOrientation = pathData["finalOrientation"]
     
     # Goes through the path and moves the chariot to the desired position
-    for pos in path:
+    for pos in pathData:
         currentPos = node.getField('translation').getSFVec3f()
         wantedPos = [round(pos['x']), round(pos['y']), round(pos['z'])]
 
@@ -53,9 +53,9 @@ def moveToPosition(node, pathData, busyFlag, delay=0.5):
         time.sleep(delay)
     
     # Set the final orientation
-    rotationField = node.getField('rotation')
-    rotation = [0, 0, 1, finalOrientation * math.pi / 180]
-    rotationField.setSFRotation(rotation)
+    # rotationField = node.getField('rotation')
+    # rotation = [0, 0, 1, finalOrientation * math.pi / 180]
+    # rotationField.setSFRotation(rotation)
     
 # Function to get the current rotation of a node in degrees
 def getAllCurrentRotationDegrees():
@@ -79,7 +79,7 @@ def connectMqtt():
     def onMessage(client, userdata, msg):
         msgConverted = json.loads(msg.payload.decode())
         topicIndex = chariotTargetTopics.index(msg.topic)
-        threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], msgConverted, [chariotBusyFlags[topicIndex]])).start()
+        threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], msgConverted)).start()
 
     client = mqttClient.Client(mqttClient.CallbackAPIVersion.VERSION1, clientId)
     client.on_connect = onConnect

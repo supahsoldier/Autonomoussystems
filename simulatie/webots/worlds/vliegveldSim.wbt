@@ -8,8 +8,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.5687577858814572 0.003884155609096526 -0.8224958932021649 3.1303588084667813
-  position 16.543548595102276 1.4219129269225732 43.54671545110511
+  orientation 0.44393571467888615 0.007471737238925077 -0.896027485278872 3.1114334470191762
+  position 28.592841284789294 2.1552843886402497 37.00281603603879
 }
 TexturedBackground {
 }
@@ -47,6 +47,7 @@ DEF Kubes2 SolidBox {
 }
 DEF Kubes3 SolidBox {
   translation 1 -2 0
+  rotation 0 0 1 1.5708
   name "box(2)"
   size 2 1 1
   appearance PBRAppearance {
@@ -66,7 +67,7 @@ DEF Kubes4 SolidBox {
   }
 }
 DEF Kubes5 SolidBox {
-  translation -5.51 7.01 0
+  translation -5 7 0
   name "box(4)"
   size 2 1 1
   appearance PBRAppearance {
@@ -76,7 +77,8 @@ DEF Kubes5 SolidBox {
   }
 }
 DEF Kubes6 SolidBox {
-  translation 1 4.02 0
+  translation 1 8 0
+  rotation 0 0 1 1.5708
   name "box(1)"
   size 2 1 1
   appearance PBRAppearance {
