@@ -8,8 +8,8 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023a/project
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.3696292793680608 0.08336646822990902 -0.9254319141939722 2.7300557534571865
-  position 17.56969672411709 9.04556644977525 22.535090266722296
+  orientation 0.5687577858814572 0.003884155609096526 -0.8224958932021649 3.1303588084667813
+  position 16.543548595102276 1.4219129269225732 43.54671545110511
 }
 TexturedBackground {
 }
@@ -26,30 +26,21 @@ Robot {
   supervisor TRUE
 }
 DEF Kubes1 SolidBox {
-  translation -1 6 0
-  size 1 1 1
+  translation 6 -7 0
+  name "box(5)"
+  size 2 1 1
   appearance PBRAppearance {
-    baseColor 1 0 0
+    baseColor 0.0666667 0 1
     roughness 0.5
     metalness 0
   }
 }
 DEF Kubes2 SolidBox {
-  translation 6 0 0
-  name "box(1)"
-  size 1 1 1
+  translation -1.45 -7 0
+  name "box(6)"
+  size 2 1 1
   appearance PBRAppearance {
-    baseColor 0.0666667 0 1
-    roughness 0.5
-    metalness 0
-  }
-}
-DEF Kubes6 SolidBox {
-  translation 6 -7 0
-  name "box(5)"
-  size 1 1 1
-  appearance PBRAppearance {
-    baseColor 0.0666667 0 1
+    baseColor 1 0 0.0156863
     roughness 0.5
     metalness 0
   }
@@ -57,7 +48,7 @@ DEF Kubes6 SolidBox {
 DEF Kubes3 SolidBox {
   translation 1 -2 0
   name "box(2)"
-  size 1 1 1
+  size 2 1 1
   appearance PBRAppearance {
     baseColor 0.0156863 1 0
     roughness 0.5
@@ -65,21 +56,31 @@ DEF Kubes3 SolidBox {
   }
 }
 DEF Kubes4 SolidBox {
-  translation -7 -2 0
+  translation -5 -2 0
   name "box(3)"
-  size 1 1 1
+  size 2 1 1
   appearance PBRAppearance {
-    baseColor 1 0.917647 0
+    baseColor 0 0.984314 1
     roughness 0.5
     metalness 0
   }
 }
 DEF Kubes5 SolidBox {
-  translation -3 -8 0
+  translation -5.51 7.01 0
   name "box(4)"
-  size 1 1 1
+  size 2 1 1
   appearance PBRAppearance {
-    baseColor 0 1 1
+    baseColor 0.984314 1 0
+    roughness 0.5
+    metalness 0
+  }
+}
+DEF Kubes6 SolidBox {
+  translation 1 4.02 0
+  name "box(1)"
+  size 2 1 1
+  appearance PBRAppearance {
+    baseColor 0.933333 0 1
     roughness 0.5
     metalness 0
   }
