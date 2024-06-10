@@ -2,30 +2,31 @@ import socket
 import network
 import time
 import random
+import math
 from machine import Pin, PWM, ADC, I2C
 import ujson as json  # Correctly import ujson for JSON parsing
 #from vl53l0x import VL53L0X
 from simple import MQTTClient
 
-BUILT_IN_LED=25
-FLED=20
-BLED=21
-PWM_LM=6
-PWM_RM=7
-PWM_SC=10
-SDA=4
-SCL=5
-MISO=16
-MOSI=19
-SCK=18
-CS=17
+BUILT_IN_LED = 25
+FLED = 20
+BLED = 21
+PWM_LM = 6
+PWM_RM = 7
+PWM_SC = 10
+SDA = 4
+SCL = 5
+MISO = 16
+MOSI = 19
+SCK = 18
+CS = 17
 
 # Insert your network parameters
-ssid = b'Gast4'
-pwd = b'G*st4l@@r'
+ssid = b'tesla iot'
+pwd = b'fsL6HgjN'
 
 # MQTT server parameters
-mqtt_server = '145.137.20.240'
+mqtt_server = '145.24.238.180'
 mqtt_port = 1883
 client_id = f'pico-{random.randint(0,1000)}'
 
@@ -53,11 +54,6 @@ RightMotor.freq(50)
 PanMotor = PWM(Pin(PWM_SC))
 PanMotor.freq(50)
 
-# Set up I2C for VL53L0X
-#i2c = I2C(0, scl=Pin(SCL), sda=Pin(SDA), freq=400000)
-#sensor = VL53L0X(i2c)
-#sensor.start()
-
 # Load the local page content
 page = open("main.html", "r")
 html = page.read()
@@ -65,14 +61,11 @@ page.close()
 
 # Function to control servos
 def MoveForward(power, Stime):
-    #if not obstacle_detected():
-        LeftMotor.duty_u16(7000)
-        RightMotor.duty_u16(3000)
-        time.sleep(Stime)
-        LeftMotor.duty_u16(5000)
-        RightMotor.duty_u16(5000)
-    #else:
-     #   print("Obstacle detected! Stopping.")
+    LeftMotor.duty_u16(7000)
+    RightMotor.duty_u16(3000)
+    time.sleep(Stime)
+    LeftMotor.duty_u16(5000)
+    RightMotor.duty_u16(5000)
 
 def MoveBackward(power, Stime):
     LeftMotor.duty_u16(3000)
@@ -129,20 +122,31 @@ def connect_to_mqtt():
         print(f'Failed to connect to MQTT broker: {e}')
     return client
 
-
 # Callback for MQTT messages
 def mqtt_callback(topic, msg):
-    print(f'looking for data')
     global current_position, target_position
-    msg = msg.decode('utf-8')
-    data = json.loads(msg)
-    if topic == b'chariot/1/position':
-        current_position = (data['x'], data['y'])
-        print(f'Succesfully got position')
-        print(current_position)
-    elif topic == b'chariot/1/target':
-        target_position = (data['x'], data['y'])
-        print(f'target position has been deliverd') 
+    try:
+        msg = msg.decode('utf-8')
+        print(f'Received message on topic {topic}: {msg}')
+        data = json.loads(msg)
+        
+        # Ensure data is a list containing a dictionary
+        if isinstance(data, list) and len(data) > 0 and isinstance(data[0], dict):
+            data = data[0]  # Extract the dictionary from the list
+        
+        if isinstance(data, dict):
+            if topic == b'chariot/6/position':
+                current_position = (data.get('x', 0), data.get('y', 0))
+                print(f'Successfully got position: {current_position}')
+            elif topic == b'chariot/6/target':
+                target_position = (data.get('x', 0), data.get('y', 0))
+                print(f'Target position has been delivered: {target_position}')
+        else:
+            print(f'Unexpected JSON structure: {data}')
+    except ValueError as e:
+        print(f'Error parsing JSON: {e}')
+    except TypeError as e:
+        print(f'Error with JSON data: {e}')
 
 # Function to publish messages
 def publish(client, topic, message):
@@ -152,12 +156,6 @@ def publish(client, topic, message):
     except Exception as e:
         print(f'Failed to publish message: {e}')
 
-# Function to detect obstacles
-#def obstacle_detected():
- #   distance = sensor.read()
-  #  print(f"Distance: {distance} mm")
-   # return distance < 200
-   
 # Function to drive towards target position
 def drive_to_target():
     global current_position, target_position
@@ -186,68 +184,18 @@ mqtt_client = connect_to_mqtt()
 mqtt_client.set_callback(mqtt_callback)
 
 # Subscribe to topics
-result_position = mqtt_client.subscribe(b'chariot/1/position')
-result_target = mqtt_client.subscribe(b'chariot/1/target')
+result_position = mqtt_client.subscribe(b'chariot/6/position')
+result_target = mqtt_client.subscribe(b'chariot/6/target')
 
+if result_position == 1 and result_target == 1:
+    print('Successfully subscribed to topics')
+else:
+    print('Failed to subscribe to topics')
 
-# Listen on port 80
-addr = socket.getaddrinfo('0.0.0.0', 80)[0][-1]
-s = socket.socket()
-s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-s.bind(addr)
-print("Listening to port 80\n")
-s.listen(1)
-
+# Main loop for handling MQTT messages and driving
 while True:
     mqtt_client.check_msg()
     drive_to_target()
     time.sleep(0.1)
     print(f'waiting')
-
-#     cl, addr = s.accept()
-#     print("Incoming connection request from: " + str(addr) + "\n")
-#     cl_file = cl.makefile('rwb', 0)
-#     found = False
-#     while True:
-#         line = cl_file.readline()
-#         if not line or line == b'\r\n':
-#             break
-#         if not found:
-#             if str(line).find("/?PRESS=FRONT_LED_ON") != -1:
-#                 fled.value(True)
-#                 #publish(mqtt_client, 'pico/actions', 'FRONT_LED_ON')
-#                 found = True
-#             if str(line).find("/?PRESS_1=FRONT_LED_OFF") != -1:
-#                 fled.value(False)
-#                # publish(mqtt_client, 'pico/actions', 'FRONT_LED_OFF')
-#                 found = True
-#             if str(line).find("/?PRESS_2=BACK_LED_ON") != -1:
-#                 bled.value(True)
-#               #  publish(mqtt_client, 'pico/actions', 'BACK_LED_ON')
-#                 found = True
-#             if str(line).find("/?PRESS_3=BACK_LED_OFF") != -1:
-#                 bled.value(False)
-#          #       publish(mqtt_client, 'pico/actions', 'BACK_LED_OFF')
-#                 found = True
-#             if str(line).find("/?PRESS_4=MOVE") != -1:
-#                 MoveForward(50, 1)
-#           #      publish(mqtt_client, 'pico/actions', 'MOVE')
-#                 found = True
-#             if str(line).find("/?PRESS_5=LEFT") != -1:
-#                 MoveLeft(50, 1)
-#            #     publish(mqtt_client, 'pico/actions', 'LEFT')
-#                 found = True
-#             if str(line).find("/?PRESS_6=RIGHT") != -1:
-#                 MoveRight(50, 1)
-#             #    publish(mqtt_client, 'pico/actions', 'RIGHT')
-#                 found = True
-#             if str(line).find("/?PRESS_7=BACK") != -1:
-#                 MoveBackward(50, 1)
-#              #   publish(mqtt_client, 'pico/actions', 'BACK')
-#                 found = True
-# 
-#     response = html
-#     cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
-#     cl.send(response)
-#     cl.close()
 
