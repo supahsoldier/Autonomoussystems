@@ -16,8 +16,8 @@ TexturedBackground {
 TexturedBackgroundLight {
 }
 Floor {
-  translation 0.5 0.5 -0.5
-  size 20 20
+  translation 0 0 -0.5
+  size 21 21
   tileSize 2 2
 }
 Robot {
@@ -36,7 +36,7 @@ DEF Kubes1 SolidBox {
   }
 }
 DEF Kubes2 SolidBox {
-  translation -1.45 -7 0
+  translation -0.871958 -6.89855 -7.10543e-15
   name "box(6)"
   size 2 1 1
   appearance PBRAppearance {
