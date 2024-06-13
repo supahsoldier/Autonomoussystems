@@ -159,12 +159,12 @@ while True:
                 cls = int(box.cls[0])
                 if classNames[cls] == 'ChariotY':
                     publish(client, "chariot/5/position", adjusted_cell_x, adjusted_cell_y,rotation_shift)
-                    publishabsolute(client, "chariot/5/absolute")
-                    publishcenter(client, "chariot/5/center", cell_center)
+                    publishabsolute(client, "chariot/5/position/absolute")
+                    publishcenter(client, "chariot/5/position/center", cell_center)
                 elif classNames[cls] == 'ChariotB':
                     publish(client, "chariot/6/position", adjusted_cell_x, adjusted_cell_y,rotation_shift)
-                    publishabsolute(client, "chariot/5/absolute")
-                    publishcenter(client, "chariot/5/center", cell_center)
+                    publishabsolute(client, "chariot/6/position/absolute")
+                    publishcenter(client, "chariot/6/position/center", cell_center)
 
                 cv2.rectangle(chariotv2, (x1, y1), (x2, y2), (255, 0, 255), 3)
 
