@@ -13,8 +13,8 @@ services:
       - central
   python_server:
     build:
-      context: .
-      dockerfile: ./python_server/Dockerfile
+      context: ./python_server
+      dockerfile: Dockerfile
     volumes:
       - ./python_server:/app
     restart: always

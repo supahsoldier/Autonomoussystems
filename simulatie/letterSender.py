@@ -1,10 +1,12 @@
+# Test script to send paths to chariots
+
 import random
 import time
 import json
 import sys
 from paho.mqtt import client as mqtt_client
 
-broker = '145.137.20.240'
+broker = '145.24.238.180'
 port = 1883
 client_id = f'publish-{random.randint(0, 1000)}'
 
@@ -16,59 +18,14 @@ chariot5TargetTopic = "chariot/5/target"
 chariot6TargetTopic = "chariot/6/target"
 chariotTargetTopics = [chariot1TargetTopic, chariot2TargetTopic, chariot3TargetTopic, chariot4TargetTopic, chariot5TargetTopic, chariot6TargetTopic]
 
-path1 = {
-    "path": [
-        {"x": -1, "y": 7, "z": 0}, {"x": 0, "y": 7, "z": 0}, {"x": 0, "y": 6, "z": 0}, 
-        {"x": 0, "y": 5, "z": 0}, {"x": 0, "y": 4, "z": 0}, {"x": 0, "y": 3, "z": 0},
-        {"x": 0, "y": 2, "z": 0}, {"x": 0, "y": 1, "z": 0}
-    ],
-    "finalOrientation": 90
-}
-
-path2 = {
-    "path": [
-        {"x": 5, "y": 0, "z": 0}, {"x": 4, "y": 0, "z": 0}, {"x": 3, "y": 0, "z": 0},
-        {"x": 2, "y": 0, "z": 0}, {"x": 1, "y": 0, "z": 0}, {"x": 0, "y": 0, "z": 0},
-        {"x": -1, "y": 0, "z": 0}, {"x": -1, "y": -1, "z": 0}
-    ],
-    "finalOrientation": 0
-}
-
-
-path3 = {
-    "path": [
-        {"x": 1, "y": -1, "z": 0}
-    ],
-    "finalOrientation": 0
-}
-
-path4 = {
-    "path": [
-        {"x": 4, "y": -2, "z": 0}, {"x": 3, "y": -2, "z": 0}, {"x": 2, "y": -2, "z": 0},
-        {"x": 1, "y": -2, "z": 0}, {"x": 0, "y": -2, "z": 0}, {"x": -1, "y": -2, "z": 0},
-        {"x": -1, "y": -1, "z": 0}, {"x": -1, "y": 0, "z": 0}, {"x": -1, "y": 1, "z": 0},
-        {"x": -1, "y": 2, "z": 0}, {"x": -2, "y": 2, "z": 0}, {"x": -2, "y": 1, "z": 0},
-    ],
-    "finalOrientation": 90
-}
-
-path5 = {
-    "path": [
-        {"x": -4, "y": 7, "z": 0}, {"x": -3, "y": 7, "z": 0}, {"x": -2, "y": 7, "z": 0},
-        {"x": -1, "y": 7, "z": 0}, {"x": -1, "y": 6, "z": 0}, {"x": -1, "y": 5, "z": 0},
-        {"x": -1, "y": 4, "z": 0}, {"x": -1, "y": 3, "z": 0}
-    ],
-    "finalOrientation": 0
-}
-
-path6 = {
-    "path": [
-        {"x": 1, "y": 3, "z": 0}
-    ],
-    "finalOrientation": 0
-}
-
-paths = [path1, path2, path3, path4, path5, path6]
+L = [
+    [{"x": 9, "y": 9, "z": 0}],
+    [{"x": -1, "y": 0, "z": 0}],
+    [{"x": -8, "y": 9, "z": 0}],
+    [{"x": 4, "y": 2, "z": 0}],
+    [{"x": -2, "y": -8, "z": 0}],
+    [{"x": 3, "y": 0, "z": 0}]
+]
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
@@ -87,7 +44,7 @@ def connect_mqtt():
     return client
 
 def publish(client):
-    for i, path in enumerate(paths):
+    for i, path in enumerate(L):
         topic = chariotTargetTopics[i]
         msg = path
         jsonMsg = json.dumps(msg)
