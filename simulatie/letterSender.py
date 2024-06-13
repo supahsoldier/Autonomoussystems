@@ -1,3 +1,5 @@
+# Test script to send paths to chariots
+
 import random
 import time
 import json
