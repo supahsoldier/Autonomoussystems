@@ -27,14 +27,16 @@ timeStep = int(supervisor.getBasicTimeStep())
 chariotNodes = [supervisor.getFromDef(f'Kubes{i+1}') for i in range(6)]
 
 # Returns the position of all chariots
+# Change range to 4 when working WITH the phisical chariots
+# Change range to 6 when working WITHOUT the phisical chariots
 def getAllPositions():
-    node1 = chariotNodes[0].getField('translation').getSFVec3f()
-    node2 = chariotNodes[1].getField('translation').getSFVec3f()
-    node3 = chariotNodes[2].getField('translation').getSFVec3f()
-    node4 = chariotNodes[3].getField('translation').getSFVec3f()
-    node5 = chariotNodes[4].getField('translation').getSFVec3f()
-    node6 = chariotNodes[5].getField('translation').getSFVec3f()
-    return [node1, node2, node3, node4, node5, node6]
+
+    nodes = []
+    for i in range(4):
+        node = chariotNodes[i].getField('translation').getSFVec3f()
+        nodes.append(node)
+
+    return nodes
 
 # Function to move a chariot to a specific position
 def moveToPosition(node, statusTopic, pathData, delay=0.5):
@@ -66,14 +68,16 @@ def moveToPosition(node, statusTopic, pathData, delay=0.5):
     rotationField.setSFRotation(rotation)
     
 # Function to get the current rotation of a node in degrees
+# Change range to 4 when working WITH the phisical chariots
+# Change range to 5 when working WITHOUT the phisical chariots
 def getAllCurrentRotationDegrees():
-    node1 = chariotNodes[0].getField('rotation').getSFRotation()[3] * 180 / math.pi
-    node2 = chariotNodes[1].getField('rotation').getSFRotation()[3] * 180 / math.pi
-    node3 = chariotNodes[2].getField('rotation').getSFRotation()[3] * 180 / math.pi
-    node4 = chariotNodes[3].getField('rotation').getSFRotation()[3] * 180 / math.pi
-    node5 = chariotNodes[4].getField('rotation').getSFRotation()[3] * 180 / math.pi
-    node6 = chariotNodes[5].getField('rotation').getSFRotation()[3] * 180 / math.pi
-    return [node1, node2, node3, node4, node5, node6]
+    nodes = []
+
+    for i in range(4):
+        node = chariotNodes[i].getField('rotation').getSFRotation()[3] * 180 / math.pi
+        nodes.append(node)
+
+    return nodes
 
 # Function to calculate the desired angle for a chariot to move to a specific position
 def calculateDesiredAngle(currentPos, desiredPos):
