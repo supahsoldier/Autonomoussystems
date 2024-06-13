@@ -1,0 +1,39 @@
+!nvidia-smi
+
+import os
+HOME = os.getcwd()
+print(HOME)
+
+# Pip install method
+
+!pip install ultralytics
+
+from IPython import display
+display.clear_output()
+
+import ultralytics
+ultralytics.checks()
+
+from ultralytics import YOLO
+
+from IPython.display import display, Image
+
+!pip install roboflow
+
+--------------------------------------------------------------------------------------
+
+from roboflow import Roboflow
+rf = Roboflow(api_key="iBTxOc2HBVMpLAc6jN0G")
+project = rf.workspace("chariot-ud1xz").project("chariotv3")
+version = project.version(2)
+dataset = version.download("yolov8")
+
+--------------------------------------------------------------------------------------
+# Before running next section, open data.yaml and update paths to correct directories
+
+--------------------------------------------------------------------------------------
+
+!yolo task=detect mode=train model=yolov8m-pose.pt data=ChariotV3-2/data.yaml epochs=150 imgsz=640
+
+--------------------------------------------------------------------------------------
+#if done correctly, .pt file can be found in train -> runs -> weights -> best.pt
