@@ -66,6 +66,23 @@ def moveToPosition(node, statusTopic, pathData, delay=0.5):
     rotationField = node.getField('rotation')
     rotation = [0, 0, 1, pathData[0]['rotation'] * math.pi / 180]
     rotationField.setSFRotation(rotation)
+
+# Moves the physical simulated robots to their real world position
+def movePhysicalChariot(node, statusTopic, positionData, delay=0.5):
+
+    wantedPos = [round(positionData['x']), round(positionData['y']), round(positionData['z'])]
+    wantedRotation = positionData['rotation'] * math.pi / 180
+
+    # Calculate the desired angle for the movement and set the rotation
+    rotationField = node.getField('rotation')
+    rotation = [0, 0, 1, wantedRotation]  
+    rotationField.setSFRotation(rotation)
+
+    # Set the position
+    node.getField('translation').setSFVec3f(wantedPos)
+
+    # Wait for the specified delay
+    time.sleep(delay)
     
 # Function to get the current rotation of a node in degrees
 # Change range to 4 when working WITH the phisical chariots
@@ -96,9 +113,14 @@ def connectMqtt():
     # Function to handle incoming messages
     def onMessage(client, userdata, msg):
         msgConverted = json.loads(msg.payload.decode())
-        topicIndex = chariotTargetTopics.index(msg.topic)
-        threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex] , msgConverted)).start()
 
+        if msg.topic == chariotPositionTopics[4] or msg.topic == chariotPositionTopics[5]:
+            topicIndex = chariotPositionTopics.index(msg.topic)
+            threading.Thread(target=movePhysicalChariot, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex], msgConverted)).start()
+        elif msg.topic != chariotTargetTopics[4] and msg.topic != chariotTargetTopics[5]:
+            topicIndex = chariotTargetTopics.index(msg.topic)
+            threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex] , msgConverted)).start()
+    
     client = mqttClient.Client(mqttClient.CallbackAPIVersion.VERSION1, clientId)
     client.on_connect = onConnect
     client.on_message = onMessage
@@ -108,6 +130,9 @@ def connectMqtt():
 
 # Function to subscribe to the needed topics
 def subscribeToTopics(client):
+    client.subscribe(chariotPositionTopics[4])
+    client.subscribe(chariotPositionTopics[5])
+
     for topic in chariotTargetTopics:
         client.subscribe(topic)
 
