@@ -7,6 +7,7 @@ import threading
 from paho.mqtt import client as mqttClient
 from controller import Supervisor
 
+
 # MQTT server information
 broker = '145.24.238.180'
 port = 1883
