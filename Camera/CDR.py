@@ -75,7 +75,7 @@ model = YOLO("ChariotV3-2.pt")
 grid_size = 20
 
 # Open the webcam outside the loop
-cap = cv2.VideoCapture(1)  # Use 0 for the default webcam
+cap = cv2.VideoCapture(0)  # Use 0 for the default webcam
 
 if not cap.isOpened():
     print("Error: Could not open video stream from webcam.", file=sys.stderr)
@@ -99,23 +99,14 @@ while True:
     # Create a dictionary to store the center coordinates of each cell
     cell_centers = {}
 
-
     # Calculate and store the center coordinates for each cell
     for i in range(grid_size):
         for j in range(grid_size):
             cell_center_x = (i * cell_width) + (cell_width // 2)
-            
-            # Adjust the cell coordinates to range from 10 to -10 (flipped y-axis)
+            cell_center_y = (j * cell_height) + (cell_height // 2)
             adjusted_x = i - 10
             adjusted_y = j - 10
-            
-            # Calculate cell_center_y considering the flipped y-axis
-            cell_center_y = (j * cell_height) + (cell_height // 2)
-            
-            # Store the cell center coordinates
             cell_centers[(adjusted_x, adjusted_y)] = (cell_center_x, cell_center_y)
-
-       
 
     results = model(chariotv2)
     classNames = model.names    
@@ -126,7 +117,7 @@ while True:
 
         for i, box in enumerate(boxes):
             confidence = box.conf[0]
-            if confidence >= 0.7:
+            if confidence >= 0.6:
                 x1, y1, x2, y2 = box.xyxy[0]
                 x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
@@ -171,11 +162,11 @@ while True:
 
                 # Publish the cell center coordinates and rotation to MQTT based on the detected class
                 cls = int(box.cls[0])
-                if classNames[cls] == 'ChariotY':
-                    publish(client, "chariot/3/position", adjusted_cell_x, adjusted_cell_y, rotation_shift)
-                    publishabsolute(client, "chariot/3/position/absolute", cx, cy)
-                    publishcenter(client, "chariot/3/position/center", cell_center)
-                elif classNames[cls] == 'ChariotB':
+                #if classNames[cls] == 'ChariotY':
+                #    publish(client, "chariot/3/position", adjusted_cell_x, adjusted_cell_y, rotation_shift)
+                #    publishabsolute(client, "chariot/3/position/absolute", cx, cy)
+                #    publishcenter(client, "chariot/3/position/center", cell_center)
+                if classNames[cls] == 'ChariotB':
                     publish(client, "chariot/2/position", adjusted_cell_x, adjusted_cell_y, rotation_shift)
                     publishabsolute(client, "chariot/2/position/absolute", cx, cy)
                     publishcenter(client, "chariot/2/position/center", cell_center)
