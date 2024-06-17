@@ -80,6 +80,7 @@ cap = cv2.VideoCapture(0)  # Use 0 for the default webcam
 if not cap.isOpened():
     print("Error: Could not open video stream from webcam.", file=sys.stderr)
     sys.exit()
+    
 
 while True:
     # Capture a frame from the webcam
@@ -162,11 +163,11 @@ while True:
 
                 # Publish the cell center coordinates and rotation to MQTT based on the detected class
                 cls = int(box.cls[0])
-                #if classNames[cls] == 'ChariotY':
-                #    publish(client, "chariot/3/position", adjusted_cell_x, adjusted_cell_y, rotation_shift)
-                #    publishabsolute(client, "chariot/3/position/absolute", cx, cy)
-                #    publishcenter(client, "chariot/3/position/center", cell_center)
-                if classNames[cls] == 'ChariotB':
+                if classNames[cls] == 'ChariotY':
+                    publish(client, "chariot/3/position", adjusted_cell_x, adjusted_cell_y, rotation_shift)
+                    publishabsolute(client, "chariot/3/position/absolute", cx, cy)
+                    publishcenter(client, "chariot/3/position/center", cell_center)
+                elif classNames[cls] == 'ChariotB':
                     publish(client, "chariot/2/position", adjusted_cell_x, adjusted_cell_y, rotation_shift)
                     publishabsolute(client, "chariot/2/position/absolute", cx, cy)
                     publishcenter(client, "chariot/2/position/center", cell_center)
@@ -203,7 +204,12 @@ while True:
         cv2.line(chariotv2, (0, j), (frame_width, j), (255, 255, 255), 1)
 
     cv2.imshow('chariotv2Detect', chariotv2)
+
     if cv2.waitKey(1) == 27:  # Press 'Esc' to exit
         break
 
+    time.sleep(0.1)    
+
 # Release the webcam and destroy all
+cap.release()
+cv2.destroyAllWindows()
