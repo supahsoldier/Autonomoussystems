@@ -34,16 +34,17 @@ built_in_led = Pin("LED", Pin.OUT)
 fled = Pin(FLED, Pin.OUT)
 bled = Pin(BLED, Pin.OUT)
 fled.value(True)
-bled.value(True)
+bled.value(False)
 built_in_led.value(True)
 time.sleep(1)
 built_in_led.value(False)
 time.sleep(1)
-fled.value(False)
+fled.value(True)
 
 # Initialize state
-current_position = (0, 0)
+current_position = (0, 0, 0)  # (x, y, rotation)
 target_path = []  # List to hold multiple target coordinates
+target_received = False  # Flag to track if target path is received
 
 # Set up servos
 LeftMotor = PWM(Pin(PWM_LM))
@@ -59,33 +60,31 @@ html = page.read()
 page.close()
 
 # Function to control servos
-def MoveForward(power, Stime):
-    LeftMotor.duty_u16(7000)
-    RightMotor.duty_u16(3000)
-    time.sleep(Stime)
+def MoveForward():
+    LeftMotor.duty_u16(5150)  # Adjusted power value
+    RightMotor.duty_u16(4500)  # Adjusted power value
+    time.sleep(0.3)
+
+def MoveBackward():
+    LeftMotor.duty_u16(4500)  # Adjusted power value
+    RightMotor.duty_u16(5210)  # Adjusted power value
+    time.sleep(0.3)
+
+def StopMotors():
     LeftMotor.duty_u16(5000)
     RightMotor.duty_u16(5000)
 
-def MoveBackward(power, Stime):
-    LeftMotor.duty_u16(3000)
-    RightMotor.duty_u16(7000)
-    time.sleep(Stime)
-    LeftMotor.duty_u16(5000)
-    RightMotor.duty_u16(5000)
+def RotateLeft():
+    LeftMotor.duty_u16(4650)  # Adjusted power value
+    RightMotor.duty_u16(4600)  # Adjusted power value
+    time.sleep(0.3)
+    
+def RotateRight():
+    LeftMotor.duty_u16(5200)  # Adjusted power value
+    RightMotor.duty_u16(5200)  # Adjusted power value
+    time.sleep(0.3)
 
-def MoveLeft(power, Stime):
-    LeftMotor.duty_u16(5000)
-    RightMotor.duty_u16(3000)
-    time.sleep(Stime)
-    LeftMotor.duty_u16(5000)
-    RightMotor.duty_u16(5000)
-
-def MoveRight(power, Stime):
-    LeftMotor.duty_u16(7000)
-    RightMotor.duty_u16(5000)
-    time.sleep(Stime)
-    LeftMotor.duty_u16(5000)
-    RightMotor.duty_u16(5000)
+    
 
 # Function to connect to Wi-Fi
 def connect_to_wifi():
@@ -124,18 +123,19 @@ def connect_to_mqtt():
 
 # Callback for MQTT messages
 def mqtt_callback(topic, msg):
-    global current_position, target_path
+    global current_position, target_path, target_received
     try:
         msg = msg.decode('utf-8')
         print(f'Received message on topic {topic}: {msg}')
         data = json.loads(msg)
         
-        if topic == b'chariot/5/position':
-            current_position = (data.get('x', 0), data.get('y', 0))
+        if topic == b'chariot/2/position':
+            current_position = (data.get('x', 0), data.get('y', 0), data.get('rotation', 0))
             print(f'Successfully got position: {current_position}')
-        elif topic == b'chariot/5/target':
+        elif topic == b'chariot/2/target':
             if isinstance(data, list):
-                target_path = [(point['x'], point['y']) for point in data]
+                target_path = [(point['x'], point['y'], (point.get('rotation', 0) + 180) % 360) for point in data]
+                target_received = True
                 print(f'Target path has been delivered: {target_path}')
             else:
                 print(f'Unexpected JSON structure for target path: {data}')
@@ -152,29 +152,74 @@ def publish(client, topic, message):
     except Exception as e:
         print(f'Failed to publish message: {e}')
 
-# Function to drive towards target position
+def normalize_rotation(rotation):
+    return rotation % 360
+
+def is_within_tolerance(value, target, tolerance=15):
+    return abs(value - target) % 360 <= tolerance or abs(value - target) % 360 >= (360 - tolerance)
+
+# Function to drive towards target position following the target_path
 def drive_to_target():
     global current_position, target_path
     if target_path:
-        next_target = target_path[0]
-        dx = next_target[0] - current_position[0]
-        dy = next_target[1] - current_position[1]
-        distance = math.sqrt(dx**2 + dy**2)
-        print(f"Current position: {current_position}, Next target: {next_target}, Distance: {distance}")
+        target = target_path[0]
+        target_x, target_y, end_rotation = target
         
-        # Start driving towards the target
-        if distance > 0.9:
-            angle = math.atan2(dy, dx)
-            LeftMotor.duty_u16(int(5000 + 2000 * math.sin(angle)))
-            RightMotor.duty_u16(int(5000 - 2000 * math.sin(angle)))
-            print(f"Driving towards target: {next_target}")
+        # Determine the required rotation to move towards the target position
+        dx = target_x - current_position[0]
+        dy = target_y - current_position[1]
+        
+        if dx == 1:
+            required_rotation = 0  # Moving right
+        elif dx == -1:
+            required_rotation = 180  # Moving left
+        elif dy == -1:
+            required_rotation = 90  # Moving up
+        elif dy == 1:
+            required_rotation = 270  # Moving down
         else:
-            print(f"Reached target position: {next_target}")
-            target_path.pop(0)  # Remove the reached target from the list
-            LeftMotor.duty_u16(5000)  # Stop the motors
-            RightMotor.duty_u16(5000)
-            current_position = next_target  # Update current position
-
+            required_rotation = current_position[2]  # No movement needed
+        
+        current_rotation = normalize_rotation(current_position[2])
+        
+        # If the car is within a tolerance range for the required rotation, move forward or backward
+        if is_within_tolerance(current_rotation, required_rotation, tolerance=30):
+            print("Moving Forward")
+            MoveForward()
+        elif is_within_tolerance((current_rotation + 180) % 360, required_rotation, tolerance=30):
+            print("Moving Backward")
+            MoveBackward()
+        else:
+            # Adjust rotation to match the required rotation
+            if (required_rotation - current_rotation + 360) % 360 > 180:
+                print("Rotating Left")
+                RotateLeft()
+            else:
+                print("Rotating Right")
+                RotateRight()
+        
+        # Update current position if it matches the target
+        if (current_position[0], current_position[1]) == (target_x, target_y):
+            target_path.pop(0)
+            current_position = (target_x, target_y, current_rotation)  # Keep current rotation
+            
+            if not target_path:
+                # Reached the final target, adjust to end rotation
+                while not is_within_tolerance(current_rotation, end_rotation):
+                    if (end_rotation - current_rotation + 360) % 360 > 180:
+                        RotateLeft()
+                    else:
+                        RotateRight()
+                    time.sleep(0.1)
+                    mqtt_client.check_msg()
+                    current_rotation = normalize_rotation(current_position[2])  # Update current rotation
+                StopMotors()
+                publish(mqtt_client, b'chariot/2/status', 'stop')
+                return
+            
+        mqtt_client.check_msg()  # Check for updated position messages
+        time.sleep(0.1)
+    
 # Connect to Wi-Fi
 connect_to_wifi()
 
@@ -184,14 +229,16 @@ if mqtt_client:
     mqtt_client.set_callback(mqtt_callback)
 
     # Subscribe to topics
-    result_position = mqtt_client.subscribe(b'chariot/5/position')
-    result_target = mqtt_client.subscribe(b'chariot/5/target')
+    result_position = mqtt_client.subscribe(b'chariot/2/position')
+    result_target = mqtt_client.subscribe(b'chariot/2/target')
 
     # Main loop for handling MQTT messages and driving
     while True:
         mqtt_client.check_msg()
+        if target_received:
+            publish(mqtt_client, b'chariot/2/status', 'start')
+            target_received = False  # Reset the flag
         drive_to_target()
         time.sleep(0.1)
 else:
     print('MQTT client not connected')
-
