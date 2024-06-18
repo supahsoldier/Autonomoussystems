@@ -2,7 +2,7 @@ from collections import deque, defaultdict
 from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 
-# Function to generate the a field of n by n squares
+# Function to generate the a graph field of n by n squares
 def generate_graph(n):
     graph = defaultdict(list)
     for x in range(-n//2, n//2):
@@ -13,12 +13,14 @@ def generate_graph(n):
                     graph[(x, y)].append(neighbor)
     return graph
 
+# function performs modified version of BFS search algorithm to find first amount of {max_paths} from {start} to {target} in the {graph}
 def bfs_all_paths(graph, start, target, max_paths):
-    print(bfs_all_paths)
-    queue = deque([(start, [start])])
+    # print(bfs_all_paths)
+    queue = deque([(start, [start])]) # add starting node to the queue
     all_paths = []
     visited = set()
 
+    # loop through queue and neighbours to the queue, if popped node is equal to the target then add path to all_paths list
     while queue and len(all_paths) < max_paths:
         (vertex, path) = queue.popleft()
         # if vertex not in visited:
@@ -27,12 +29,14 @@ def bfs_all_paths(graph, start, target, max_paths):
         else:
             visited.add(vertex)
             for neighbor in graph[vertex]:
-                if neighbor not in path:  # avoid cycles
+                # check whether neighbour is already present in the path to avoid cycles
+                if neighbor not in path:
                     queue.append((neighbor, path + [neighbor]))
 
     all_paths.sort(key=len)
     return all_paths
 
+# function check whether there are collision on two paths at a certain time step
 def checkPathsCollision(path_a, path_b):
     max_length = max(len(path_a), len(path_b))
 
@@ -54,7 +58,7 @@ def checkPathsCollision(path_a, path_b):
         
     return False
 
-# Function to simulate movements
+# Function to simulate movements and find 6 paths without collisions
 def simulate_movements(all_paths):
     print(simulate_movements)
 
@@ -88,7 +92,7 @@ def simulate_movements(all_paths):
 def getPaths(starting_vertices, target_vertices):
     print(getPaths)
     # Initialize the grid
-    n = 22  # for a 40x40 grid (to include -20 to 20 range)
+    n = 22
     graph = generate_graph(n)
 
     # Find the paths from each starting vertex to each target vertex
