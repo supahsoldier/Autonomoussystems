@@ -63,28 +63,30 @@ page.close()
 def MoveForward():
     LeftMotor.duty_u16(5150)  # Adjusted power value
     RightMotor.duty_u16(4500)  # Adjusted power value
-    time.sleep(0.3)
+    time.sleep(0.5)
+    StopMotors()
 
 def MoveBackward():
     LeftMotor.duty_u16(4500)  # Adjusted power value
     RightMotor.duty_u16(5210)  # Adjusted power value
-    time.sleep(0.3)
+    time.sleep(0.5)
+    StopMotors()
 
 def StopMotors():
     LeftMotor.duty_u16(5000)
     RightMotor.duty_u16(5000)
 
 def RotateLeft():
-    LeftMotor.duty_u16(4650)  # Adjusted power value
-    RightMotor.duty_u16(4600)  # Adjusted power value
-    time.sleep(0.3)
+    LeftMotor.duty_u16(4500)  # Adjusted power value
+    RightMotor.duty_u16(4500)  # Adjusted power value
+    time.sleep(0.1)
+    StopMotors()
     
 def RotateRight():
     LeftMotor.duty_u16(5200)  # Adjusted power value
     RightMotor.duty_u16(5200)  # Adjusted power value
-    time.sleep(0.3)
-
-    
+    time.sleep(0.1)
+    StopMotors()
 
 # Function to connect to Wi-Fi
 def connect_to_wifi():
@@ -133,16 +135,20 @@ def mqtt_callback(topic, msg):
             current_position = (data.get('x', 0), data.get('y', 0), data.get('rotation', 0))
             print(f'Successfully got position: {current_position}')
         elif topic == b'chariot/2/target':
-            if isinstance(data, list):
-                target_path = [(point['x'], point['y'], (point.get('rotation', 0) + 180) % 360) for point in data]
+            if isinstance(data, list) and len(data) > 1:
+                # Skip the first coordinate
+                target_path = [(point['x'], point['y'], (point.get('rotation', 0) + 180) % 360) for point in data[1:]]
                 target_received = True
                 print(f'Target path has been delivered: {target_path}')
+            elif isinstance(data, list) and len(data) == 1:
+                print('Only one coordinate received, skipping as it is the current position.')
             else:
                 print(f'Unexpected JSON structure for target path: {data}')
     except ValueError as e:
         print(f'Error parsing JSON: {e}')
     except TypeError as e:
         print(f'Error with JSON data: {e}')
+
 
 # Function to publish messages
 def publish(client, topic, message):
@@ -242,3 +248,8 @@ if mqtt_client:
         time.sleep(0.1)
 else:
     print('MQTT client not connected')
+
+
+
+
+
