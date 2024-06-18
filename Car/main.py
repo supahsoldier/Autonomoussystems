@@ -189,10 +189,10 @@ def drive_to_target():
         current_rotation = normalize_rotation(current_position[2])
         
         # If the car is within a tolerance range for the required rotation, move forward or backward
-        if is_within_tolerance(current_rotation, required_rotation, tolerance=30):
+        if is_within_tolerance(current_rotation, required_rotation, tolerance=15):
             print("Moving Forward")
             MoveForward()
-        elif is_within_tolerance((current_rotation + 180) % 360, required_rotation, tolerance=30):
+        elif is_within_tolerance((current_rotation + 180) % 360, required_rotation, tolerance=15):
             print("Moving Backward")
             MoveBackward()
         else:
