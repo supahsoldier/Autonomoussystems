@@ -128,11 +128,9 @@ def connectMqtt():
 
         if numberOfControlledChariots == 4:
             if msg.topic == chariotPositionTopics[4] or msg.topic == chariotPositionTopics[5]:
-            #if msg.topic == chariotPositionTopics[5]:
                 topicIndex = chariotPositionTopics.index(msg.topic)
                 threading.Thread(target=movePhysicalChariot, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex], msgConverted)).start()
             elif msg.topic != chariotTargetTopics[4] and msg.topic != chariotTargetTopics[5]:
-            #elif msg.topic != chariotTargetTopics[5]:
                 topicIndex = chariotTargetTopics.index(msg.topic)
                 threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex] , msgConverted)).start()
         elif numberOfControlledChariots == 6:
@@ -180,6 +178,8 @@ def publishPositions(client):
                 print(f"Failed to send message to topic {chariotPositionTopics[i]}", file=sys.stderr)
         time.sleep(2)
 
+# Connect to the MQTT broker and subscribe to the needed topics
+# Start the thread to publish the positions of the chariots every 2 seconds
 mqttClient = connectMqtt()
 subscribeToTopics(mqttClient)
 publishThread = threading.Thread(target=publishPositions, args=(mqttClient,))
