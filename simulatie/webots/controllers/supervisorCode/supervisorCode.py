@@ -30,13 +30,16 @@ chariotNodes = [supervisor.getFromDef(f'Kubes{i+1}') for i in range(6)]
 # Puts the list in the order of 1, 3, 4, 5, 6, 2
 chariotNodes = [chariotNodes[0], chariotNodes[3], chariotNodes[4], chariotNodes[5], chariotNodes[1], chariotNodes[2]]
 
+# Number of controlled chariots
+# Change to 4 when working WITH the phisical chariots
+# Change to 6 when working WITHOUT the phisical chariots
+numberOfControlledChariots = 6
+
 # Returns the position of all chariots
-# Change range to 4 when working WITH the phisical chariots
-# Change range to 6 when working WITHOUT the phisical chariots
 def getAllPositions():
 
     nodes = []
-    for i in range(4):
+    for i in range(numberOfControlledChariots):
         node = chariotNodes[i].getField('translation').getSFVec3f()
         nodes.append(node)
 
@@ -49,17 +52,17 @@ def moveToPosition(node, statusTopic, pathData, delay=0.5):
 
     # Goes through the path and moves the chariot to the desired position
     for pos in pathData:
-        currentPos = node.getField('translation').getSFVec3f()
-        wantedPos = [round(pos['x']), round(pos['y']), round(pos['z'])]
+        currentPosition = node.getField('translation').getSFVec3f()
+        wantedPosition = [round(pos['x']), round(pos['y']), round(pos['z'])]
 
         # Calculate the desired angle for the movement and set the rotation
-        angle = calculateDesiredAngle(currentPos, wantedPos)
+        angle = calculateDesiredAngle(currentPosition, wantedPosition)
         rotationField = node.getField('rotation')
         rotation = [0, 0, 1, angle]  
         rotationField.setSFRotation(rotation)
 
         # Set the position
-        node.getField('translation').setSFVec3f(wantedPos)
+        node.getField('translation').setSFVec3f(wantedPosition)
 
         # Wait for the specified delay
         time.sleep(delay)
@@ -74,7 +77,7 @@ def moveToPosition(node, statusTopic, pathData, delay=0.5):
 # Moves the physical simulated robots to their real world position
 def movePhysicalChariot(node, statusTopic, positionData, delay=0.5):
 
-    wantedPos = [round(positionData['x']), round(positionData['y']), round(positionData['z'])]
+    wantedPosition = [round(positionData['x']), round(positionData['y']), round(positionData['z'])]
     wantedRotation = positionData['rotation'] * math.pi / 180
 
     # Calculate the desired angle for the movement and set the rotation
@@ -83,7 +86,7 @@ def movePhysicalChariot(node, statusTopic, positionData, delay=0.5):
     rotationField.setSFRotation(rotation)
 
     # Set the position
-    node.getField('translation').setSFVec3f(wantedPos)
+    node.getField('translation').setSFVec3f(wantedPosition)
 
     # Wait for the specified delay
     time.sleep(delay)
@@ -94,16 +97,16 @@ def movePhysicalChariot(node, statusTopic, positionData, delay=0.5):
 def getAllCurrentRotationDegrees():
     nodes = []
 
-    for i in range(4):
+    for i in range(numberOfControlledChariots):
         node = chariotNodes[i].getField('rotation').getSFRotation()[3] * 180 / math.pi
         nodes.append(node)
 
     return nodes
 
 # Function to calculate the desired angle for a chariot to move to a specific position
-def calculateDesiredAngle(currentPos, desiredPos):
-    x = desiredPos[0] - currentPos[0]
-    y = desiredPos[1] - currentPos[1]
+def calculateDesiredAngle(currentPosition, desiredPos):
+    x = desiredPos[0] - currentPosition[0]
+    y = desiredPos[1] - currentPosition[1]
     return math.atan2(y, x)
 
 # Function to connect to the MQTT broker
@@ -116,17 +119,27 @@ def connectMqtt():
 
     # Function to handle incoming messages
     def onMessage(client, userdata, msg):
-        msgConverted = json.loads(msg.payload.decode())
+        try:
+            msgConverted = json.loads(msg.payload.decode())
+        except json.JSONDecodeError:
+            print(f"Wrong message format: {msg.payload.decode()}", file=sys.stderr)
+            print("Use the following format: [{\"x\": 0, \"y\": 0, \"z\": 0, \"rotation\": 0}]", file=sys.stderr)
+            return
 
-        if msg.topic == chariotPositionTopics[4] or msg.topic == chariotPositionTopics[5]:
-        #if msg.topic == chariotPositionTopics[5]:
-            topicIndex = chariotPositionTopics.index(msg.topic)
-            threading.Thread(target=movePhysicalChariot, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex], msgConverted)).start()
-        elif msg.topic != chariotTargetTopics[4] and msg.topic != chariotTargetTopics[5]:
-        #elif msg.topic != chariotTargetTopics[5]:
+        if numberOfControlledChariots == 4:
+            if msg.topic == chariotPositionTopics[4] or msg.topic == chariotPositionTopics[5]:
+            #if msg.topic == chariotPositionTopics[5]:
+                topicIndex = chariotPositionTopics.index(msg.topic)
+                threading.Thread(target=movePhysicalChariot, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex], msgConverted)).start()
+            elif msg.topic != chariotTargetTopics[4] and msg.topic != chariotTargetTopics[5]:
+            #elif msg.topic != chariotTargetTopics[5]:
+                topicIndex = chariotTargetTopics.index(msg.topic)
+                threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex] , msgConverted)).start()
+        elif numberOfControlledChariots == 6:
             topicIndex = chariotTargetTopics.index(msg.topic)
             threading.Thread(target=moveToPosition, args=(chariotNodes[topicIndex], chariotStatusTopics[topicIndex] , msgConverted)).start()
-    
+        
+
     client = mqttClient.Client(mqttClient.CallbackAPIVersion.VERSION1, clientId)
     client.on_connect = onConnect
     client.on_message = onMessage
@@ -136,8 +149,9 @@ def connectMqtt():
 
 # Function to subscribe to the needed topics
 def subscribeToTopics(client):
-    client.subscribe(chariotPositionTopics[4])
-    client.subscribe(chariotPositionTopics[5])
+    if numberOfControlledChariots == 4:
+        client.subscribe(chariotPositionTopics[4])
+        client.subscribe(chariotPositionTopics[5])
 
     for topic in chariotTargetTopics:
         client.subscribe(topic)
