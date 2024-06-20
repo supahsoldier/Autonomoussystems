@@ -6,21 +6,27 @@ from paho.mqtt import client as mqtt_client
 from bfs import getPaths, generate_graph
 from letter import getLetters, getRotation
 
+# initial chariot coordinates
 chariots = [(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)]
+
+# topics for receiving input
 topics = ["application/front/in", "chariot/1/position", "chariot/2/position", "chariot/3/position", "chariot/4/position", "chariot/5/position", "chariot/6/position", "chariot/1/status","chariot/2/status", "chariot/3/status", "chariot/4/status", "chariot/5/status", "chariot/6/status"]
+
+# topics for outputting data
 target_topics = ["chariot/1/target", "chariot/2/target", "chariot/3/target", "chariot/4/target", "chariot/5/target", "chariot/6/target"]
 
+# arrays containing positions and rotations for individual letters
 letters = getLetters()
 rotations = getRotation()
 
 incomming_buffer = []
 moving = [False, False, False, False, False, False]
 
+# broker information
 broker = 'host.docker.internal'
 port = 1883
 topic = "python/mqtt"
-# Generate a Client ID with the publish prefix.
-client_id = f'publish-{random.randint(0, 1000)}'
+client_id = f'publish-{random.randint(0, 1000)}' # Generates a Client ID with the publish prefix.
 
 def connect_mqtt():
     def on_connect(client, userdata, flags, rc):
@@ -34,7 +40,6 @@ def connect_mqtt():
     client.on_connect = on_connect
     client.connect(broker, port)
     return client
-
 
 def publish(client, msg, topic):
 
@@ -52,8 +57,9 @@ def on_message(client, userdata, msg):
     # print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
     if "front/in" in msg.topic:
-        for c in msg.payload.decode():
-            incomming_buffer.append(c)
+        for char in msg.payload.decode():
+            if ('a' <= char <= 'z') or char == ' ':
+                incomming_buffer.append(char)
         return
     
     if "status" in msg.topic:
@@ -71,20 +77,25 @@ def on_message(client, userdata, msg):
             moving[5] = True if "start" in msg.payload.decode() else False
         return
 
-    jObject = json.loads(msg.payload.decode())
+    try:
+        jObject = json.loads(msg.payload.decode())
 
-    if '1' in msg.topic:
-        chariots[0] = (jObject["x"], jObject["y"])
-    elif '2' in msg.topic:
-        chariots[1] = (jObject["x"], jObject["y"])
-    elif '3' in msg.topic:
-        chariots[2] = (jObject["x"], jObject["y"])
-    elif '4' in msg.topic:
-        chariots[3] = (jObject["x"], jObject["y"])
-    elif '5' in msg.topic:
-        chariots[4] = (jObject["x"], jObject["y"])
-    elif '6' in msg.topic:
-        chariots[5] = (jObject["x"], jObject["y"])
+        if '1' in msg.topic:
+            chariots[0] = (jObject["x"], jObject["y"])
+        elif '2' in msg.topic:
+            chariots[1] = (jObject["x"], jObject["y"])
+        elif '3' in msg.topic:
+            chariots[2] = (jObject["x"], jObject["y"])
+        elif '4' in msg.topic:
+            chariots[3] = (jObject["x"], jObject["y"])
+        elif '5' in msg.topic:
+            chariots[4] = (jObject["x"], jObject["y"])
+        elif '6' in msg.topic:
+            chariots[5] = (jObject["x"], jObject["y"])
+    except json.JSONDecodeError:
+        print("provided input was expected to be json, but was: ", msg.payload.decode())
+
+
     
 client = connect_mqtt()
 client.loop_start()
@@ -126,6 +137,7 @@ def send_paths(target_vertices, rotations):
     # Find the paths from each starting vertex to each target vertex
     paths = getPaths(starting_vertices, efficient_target_vertices)
 
+    # If no paths are possible then return to start positions and try again
     if paths is None:
         print("No Paths found")
         if set(target_vertices) != letters[' ']:
@@ -146,11 +158,13 @@ def send_paths(target_vertices, rotations):
         json_objects.append(json_path)
         i += 1
 
+    # Send json paths to respective Chariots
     for i in range(6):
         # print(json.dumps(json_objects[i], indent=4))
         publish(client, json.dumps(json_objects[i]), target_topics[i])
 
 while True:
+    # Check for characters in the buffer and if present process these one by one
     if(len(incomming_buffer) > 0):
         incommingChar = incomming_buffer[0]
         targets = letters[incommingChar]
